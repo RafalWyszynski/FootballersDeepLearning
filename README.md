@@ -1,1 +1,2 @@
 # FootballersDeepLearning
+Different approach to the same problem as FootballersClassifier. This time I want to summarize my knowledge about Deep Learning basis. I want to solve the same problem, because I want to compare both methods accuracy.
