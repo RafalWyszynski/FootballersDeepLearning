@@ -50,7 +50,7 @@ model.add(Dense(4, activation='softmax'))
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
 # Implementing EarlyStopping to avoid overfitting
-early_stopping = EarlyStopping(monitor='val_accuracy', patience=4)
+early_stopping = EarlyStopping(monitor='val_loss', patience=5)
 
 # Model Training
-history=model.fit(X_test, y_test, epochs=100, validation_data=(X_test, y_test), callbacks=[early_stopping], batch_size=128)
+history=model.fit(X_train, y_train, epochs=100, validation_data=(X_test, y_test), callbacks=[early_stopping], batch_size=128)
