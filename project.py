@@ -7,9 +7,11 @@ from keras.callbacks import EarlyStopping
 from keras.layers import BatchNormalization
 from sklearn.preprocessing import StandardScaler
 import numpy as np
+from keras.wrappers.scikit_learn import KerasClassifier
+from sklearn.model_selection import RandomizedSearchCV
 
 # Setting models' seed
-np.random.seed(120)
+np.random.seed(32)
 
 # Loading Footballers stats from .csv file
 stats = pd.read_csv('PlayersStats.csv', encoding='Windows-1250', index_col=1, sep=';')
@@ -39,18 +41,23 @@ X_train= scaler.fit_transform(X_train)
 X_test= scaler.fit_transform(X_test)
 
 # Shaping Neural Network
-model = Sequential()
-model.add(Dense(64, input_shape = (131,), activation='relu'))
-model.add(BatchNormalization())
-model.add(Dense(32, activation='relu'))
-model.add(BatchNormalization())
-model.add(Dense(4, activation='softmax'))
+def create_model(optimizer='adam', activation='relu'):
+    model = Sequential()
+    model.add(Dense(64, input_shape = (131,), activation=activation))
+    model.add(BatchNormalization())
+    model.add(Dense(4, activation='softmax'))
+    model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+    return model
 
-# Compiling Neural Network
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+model = KerasClassifier(build_fn=create_model, epochs=100, batch_size=32)
+
+#Adding RandomizedSearchCV to find best parameters
+params = dict(optimizer=['sgd', 'adam'], batch_size=[16,32,64,128], activation=['relu','tanh', 'leaky_relu'])
+random_search = RandomizedSearchCV(model, param_distributions=params, cv=3, n_iter=8)
 
 # Implementing EarlyStopping to avoid overfitting
 early_stopping = EarlyStopping(monitor='val_loss', patience=5)
 
-# Model Training
-history=model.fit(X_train, y_train, epochs=100, validation_data=(X_test, y_test), callbacks=[early_stopping], batch_size=128)
+random_search_results = random_search.fit(X_train, y_train, validation_data=(X_test, y_test), callbacks=[early_stopping])
+print('Best: {} using: {}'.format(random_search_results.best_score_, random_search_results.best_params_))
+
