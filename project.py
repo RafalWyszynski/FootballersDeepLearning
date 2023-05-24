@@ -43,7 +43,9 @@ X_test= scaler.fit_transform(X_test)
 # Shaping Neural Network
 def create_model(optimizer='adam', activation='relu'):
     model = Sequential()
-    model.add(Dense(64, input_shape = (131,), activation=activation))
+    model.add(Dense(128, input_shape = (131,), activation=activation))
+    model.add(BatchNormalization())
+    model.add(Dense(64, activation=activation))
     model.add(BatchNormalization())
     model.add(Dense(4, activation='softmax'))
     model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
@@ -51,13 +53,14 @@ def create_model(optimizer='adam', activation='relu'):
 
 model = KerasClassifier(build_fn=create_model, epochs=100, batch_size=32)
 
-#Adding RandomizedSearchCV to find best parameters
+# Adding RandomizedSearchCV to find best parameters
 params = dict(optimizer=['sgd', 'adam'], batch_size=[16,32,64,128], activation=['relu','tanh', 'leaky_relu'])
 random_search = RandomizedSearchCV(model, param_distributions=params, cv=3, n_iter=8)
 
 # Implementing EarlyStopping to avoid overfitting
 early_stopping = EarlyStopping(monitor='val_loss', patience=5)
 
+# Searching for the best parameters and showing results
 random_search_results = random_search.fit(X_train, y_train, validation_data=(X_test, y_test), callbacks=[early_stopping])
 print('Best: {} using: {}'.format(random_search_results.best_score_, random_search_results.best_params_))
 
