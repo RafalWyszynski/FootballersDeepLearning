@@ -37,3 +37,20 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, stratif
 scaler = StandardScaler()
 X_train= scaler.fit_transform(X_train)
 X_test= scaler.fit_transform(X_test)
+
+# Shaping Neural Network
+model = Sequential()
+model.add(Dense(64, input_shape = (131,), activation='relu'))
+model.add(BatchNormalization())
+model.add(Dense(32, activation='relu'))
+model.add(BatchNormalization())
+model.add(Dense(4, activation='softmax'))
+
+# Compiling Neural Network
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+# Implementing EarlyStopping to avoid overfitting
+early_stopping = EarlyStopping(monitor='val_accuracy', patience=4)
+
+# Model Training
+history=model.fit(X_test, y_test, epochs=100, validation_data=(X_test, y_test), callbacks=[early_stopping], batch_size=128)
